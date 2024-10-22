@@ -17,7 +17,7 @@ scraped_data = []
 
 
 for index, row in csv_data.iterrows():
-    if index >=100 :
+    if index >=20:
         break
     url = row['links']
     driver.get(url)
@@ -66,6 +66,23 @@ for index, row in csv_data.iterrows():
     except Exception as e:
         print(f"Error navigating slider: {e}")
         slide_content =[]
+        
+    try:
+        images = driver.find_element(By.CSS_SELECTOR, 'img.plmr-c-product-info__image.js-product-img--default')
+        image_url = images.get_attribute('src')
+
+    except Exception as e:
+        print(f"Error fetching images from {url}: {e}")
+        image_url = None
+        
+    try:
+        specification_container = driver.find_element(By.CLASS_NAME, 'plmr-c-additional-product-specs')
+        boxes = specification_container.find_elements(By.CLASS_NAME, 'plmr-c-featured-product-specs__item')
+        specification = {box.find_element(By.CLASS_NAME, 'plmr-c-featured-product-specs__item-text').text.strip(): 
+                         box.find_element(By.CLASS_NAME, 'plmr-c-featured-product-specs__item-name').text.strip() 
+                         for box in boxes}
+    except Exception as e :
+        print(f"Error fetching specifications from {url}: {e}")
 
     # Append the data to the list
     scraped_data.append({
@@ -74,7 +91,9 @@ for index, row in csv_data.iterrows():
         'SKU' : sku,
         'UPC' : upc,
         'Features':feature_list,
-        'slide':slide_content
+        'slide':slide_content,
+        'Images' : image_url,
+        'Specifications': specification
         # 'Price': price
     })
 
@@ -82,7 +101,7 @@ driver.quit()
 
 # Save the scraped data to a new CSV file
 scraped_df = pd.DataFrame(scraped_data)
-scraped_df.to_csv('trial.csv', index=False)  
+scraped_df.to_csv('details.csv', index=False)  
 
 print("Scraping completed!")
 
