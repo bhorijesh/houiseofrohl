@@ -17,7 +17,7 @@ scraped_data = []
 
 
 for index, row in csv_data.iterrows():
-    if index >=20:
+    if index >=100:
         break
     url = row['links']
     driver.get(url)
